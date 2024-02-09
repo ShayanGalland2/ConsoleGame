@@ -19,7 +19,7 @@ public class CarteManager
         carteManager.GenererPokemonSurCarte();
     }
 
-    private void GenererPokemonSurCarte()
+    public void GenererPokemonSurCarte()
     {
         var coordonneesPokemon = new Dictionary<(int x, int y), string>();
         for (int y = 0; y < carte.Length; y++)
@@ -48,7 +48,7 @@ public class CarteManager
     }
 
 
-    private string[] ChargerCarteDepuisFichier(string cheminFichier)
+    public string[] ChargerCarteDepuisFichier(string cheminFichier)
     {
         List<string> lignesCarte = new List<string>();
         try
@@ -128,17 +128,154 @@ public class CarteManager
         if (nouveauX >= 0 && nouveauX < carte[0].Length && nouveauY >= 0 && nouveauY < carte.Length)
         {
             char caseCible = carte[nouveauY][nouveauX];
-            if (caseCible == '#') return; // Bloquer le mouvement si c'est un mur
+            if (caseCible == '#' || caseCible == 'P') return; // Bloquer le mouvement si c'est un mur ou la position initiale du joueur
 
-            if (char.IsDigit(caseCible)) // Déclencher un combat si c'est un chiffre
+
+            if (caseCible == 'M' || caseCible == 'F')
+            {
+                InteragirAvecPNJ(caseCible, joueur);
+                return; // Pas de déplacement, mais interaction effectuée
+            }
+
+
+            // Gestion des rencontres avec des Pokémon sauvages
+            if (char.IsDigit(caseCible))
             {
                 int niveauPokemon = int.Parse(caseCible.ToString());
-                Combat.DemarrerCombat(niveauPokemon, joueur); // Modifier pour passer le niveau du Pokémon
-                return; // Empêcher le déplacement sur la case du combat
+                Combat.DemarrerCombat(niveauPokemon, joueur, this, nouveauX, nouveauY);
+                RetirerPokemonDeLaCarte(nouveauX, nouveauY); // Retirer le Pokémon de la carte après le combat
+            }
+            else
+            {
+                // Collecte d'objets
+                switch (caseCible)
+                {
+                    case 'k':
+                        joueur.AjouterObjetInventaire("clé");
+                        Console.WriteLine("Vous avez trouvé une clé !");
+                        break;
+                    case 'e':
+                        joueur.AjouterObjetInventaire("potion d'experience");
+                        Console.WriteLine("Vous avez trouvé une potion d'expérience !");
+                        break;
+                    case 'v':
+                        joueur.AjouterObjetInventaire("potion de vie");
+                        Console.WriteLine("Vous avez trouvé une potion de vie !");
+                        break;
+                    case 'n':
+                        joueur.AjouterObjetInventaire("potion de niveau");
+                        Console.WriteLine("Vous avez trouvé une potion de niveau !");
+                        break;
+                }
+                if (caseCible == '*') // Vérifier si le joueur entre dans un buisson
+                {
+                    Random rnd = new Random();
+                    if (rnd.Next(10) == 0) // 1 chance sur 10
+                    {
+                        // Sélection aléatoire du niveau du Pokémon entre 4 et 8
+                        int niveauPokemon = rnd.Next(4, 9);
+                        // Sélectionner un Pokémon aléatoire
+                        Pokemon pokemonSauvage = PokemonFactory.AttribuerPokemonAleatoire(niveauPokemon);
+                        Combat.DemarrerCombat(niveauPokemon, joueur, this, nouveauX, nouveauY);
+                        // Pas besoin de retirer le buisson de la carte
+                        return; // Empêcher le déplacement après le combat
+                    }
+                }
+
+
+                // Si ce n'est pas un buisson et pas un Pokémon, effacer l'objet de la carte
+                if (caseCible != '*' && !char.IsDigit(caseCible))
+                {
+                    RetirerPokemonDeLaCarte(nouveauX, nouveauY);
+                }
             }
 
             joueurX = nouveauX;
             joueurY = nouveauY;
         }
     }
+
+
+
+
+
+    public void RetirerPokemonDeLaCarte(int x, int y)
+    {
+        if (carte[y][x] != '#') // Assurez-vous que ce n'est pas un mur
+        {
+            carte[y] = carte[y].Substring(0, x) + ' ' + carte[y].Substring(x + 1);
+        }
+    }
+
+    public void ReinitialiserCarte()
+    {
+        string cheminFichierBase = "baseMap.txt";
+        carte = ChargerCarteDepuisFichier(cheminFichierBase);
+        TrouverPositionJoueur();
+        GenererPokemonSurCarte(); // Cette ligne assure que les Pokémon sont redistribués sur la carte.
+    }
+
+
+
+    public void SauvegarderCarte()
+    {
+        using (StreamWriter sw = new StreamWriter("map.txt"))
+        {
+            for (int y = 0; y < carte.Length; y++)
+            {
+                string ligne = "";
+                for (int x = 0; x < carte[y].Length; x++)
+                {
+                    if (x == joueurX && y == joueurY)
+                    {
+                        ligne += 'P'; // Marquer la position du joueur
+                    }
+                    else
+                    {
+                        ligne += carte[y][x]; // Ajouter le caractère de la carte
+                    }
+                }
+                sw.WriteLine(ligne);
+            }
+        }
+    }
+
+    public void InteragirAvecPNJ(char pnj, Joueur joueur)
+    {
+        switch (pnj)
+        {
+            case 'M':
+                Console.WriteLine("Maxime : Je te donne ce Charizard de niveau 5 pour t'aider dans ton aventure !");
+                joueur.CollectionPokemon.Add(PokemonFactory.CreerPokemon("charizard", 5));
+                Console.WriteLine("Vous avez reçu un Charizard de niveau 5 !");
+                break;
+            case 'F':
+                Console.WriteLine("Frank : Veux-tu échanger une potion de soins, une potion de vie et une potion de niveau contre une potion revitalisante ? (o/n)");
+                var reponse = Console.ReadLine();
+                if (reponse.ToLower() == "o")
+                {
+                    if (joueur.PeutEchangerPotions())
+                    {
+                        joueur.EchangerPotionsPourRevitalisante();
+                        Console.WriteLine("Échange réussi ! Vous avez reçu une potion revitalisante.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Vous n'avez pas assez de potions pour faire cet échange.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Peut-être une autre fois alors.");
+                }
+                break;
+            default:
+                Console.WriteLine("Vous parlez à un inconnu.");
+                break;
+        }
+        Console.WriteLine("Appuyez sur une touche pour continuer...");
+        Console.ReadKey();
+    }
+
+
 }

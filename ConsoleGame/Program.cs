@@ -14,6 +14,7 @@ class Program
 
 
 
+
     static void Menu()
     {
         bool quitter = false;
@@ -22,7 +23,8 @@ class Program
             Console.Clear();
             Console.WriteLine("1. Jouer");
             Console.WriteLine("2. Équipe");
-            Console.WriteLine("3. Quitter");
+            Console.WriteLine("3. New Game");
+            Console.WriteLine("4. Quitter");
             Console.Write("Sélectionnez une option: ");
 
             switch (Console.ReadLine())
@@ -33,7 +35,20 @@ class Program
                 case "2":
                     VoirEquipe();
                     break;
-                case "3":
+                case "3": // Nouvelle Partie
+                    File.Copy("baseCollect.txt", "collect.txt", true); // Réinitialise la collection de Pokémon
+                    File.Copy("baseMap.txt", "map.txt", true); // Réinitialise la carte
+                    joueur.ReinitialiserCollection(); // Recharge la collection de Pokémon du joueur à partir de "collect.txt"
+                    var carteManagerNouvellePartie = new CarteManager("map.txt"); // Recrée une nouvelle instance de CarteManager avec la carte réinitialisée
+                    carteManagerNouvellePartie.GenererPokemonSurCarte(); // Regénère les Pokémon sur la carte
+                    
+                    joueur.ReinitialiserExperienceEtInventaire(); // Assurez-vous d'ajouter cette méthode dans Joueur.cs
+
+                    Console.WriteLine("Nouvelle partie commencée. Veuillez lancer le jeu.");
+                    Console.ReadKey();
+                    break;
+
+                case "4":
                     quitter = true;
                     break;
                 default:
@@ -70,7 +85,7 @@ class Program
                         carteManager.AfficherCarte();
                         break;
                     case ConsoleKey.M:
-                        GameMenu.AfficherMenu(joueur); // Afficher le menu en jeu
+                        GameMenu.AfficherMenu(joueur, carteManager); // Afficher le menu en jeu
                         carteManager.AfficherCarte(); // Réafficher la carte après la fermeture du menu
                         break;
                     case ConsoleKey.Escape:

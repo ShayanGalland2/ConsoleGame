@@ -1,4 +1,18 @@
-﻿public class Attaque
+﻿public enum TypePokemon
+{
+    Normal,
+    Feu,
+    Eau,
+    Plante,
+    Electrique,
+    Glace,
+    Combat,
+    Roche,
+    Psy,
+    Vol
+}
+
+public class Attaque
 {
     public string Nom { get; set; }
     public int Puissance { get; set; }
@@ -13,6 +27,8 @@
 
 public class Pokemon
 {
+    public TypePokemon Type { get; set; }
+
     public string Nom { get; set; }
     public int Niveau { get; set; }
     public int Attaque { get; set; }

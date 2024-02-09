@@ -2,17 +2,16 @@
 
 public class Combat
 {
-    public static void DemarrerCombat(int niveauPokemon, Joueur joueur)
+    public static void DemarrerCombat(int niveauPokemon, Joueur joueur, CarteManager carteManager, int x, int y)
     {
-        // choisir le pokemon
-        Console.WriteLine("Choisissez un Pokémon pour combattre :");
-        var pokemonJoueur = joueur.ChoisirPokemonPourCombat();
-
-        // creer un Pokémon sauvage basé sur le niveau
-        Pokemon pokemonSauvage = PokemonFactory.CreerPokemon("Pikachu", niveauPokemon);
+        // Créer un Pokémon sauvage basé sur le niveau
+        Pokemon pokemonSauvage = PokemonFactory.CreerPokemon("pikachu", niveauPokemon);
 
         Console.WriteLine($"Un {pokemonSauvage.Nom} sauvage de niveau {pokemonSauvage.Niveau} apparaît !");
         AfficherStatsPokemon(pokemonSauvage);
+
+        Console.WriteLine("Choisissez un Pokémon pour combattre :");
+        var pokemonJoueur = joueur.ChoisirPokemonPourCombat();
 
         Console.WriteLine("1. Se battre");
         Console.WriteLine("2. Fuir");
@@ -21,13 +20,19 @@ public class Combat
 
         if (choix == "1")
         {
-            Console.WriteLine("Vous avez choisi de vous battre !");
-            // Ici, nous pouvons développer la logique de combat
+            bool resultatCombat = LogiqueDeCombat.ExecuterCombat(joueur, pokemonSauvage, niveauPokemon);
+            if (resultatCombat)
+            {
+                joueur.CollectionPokemon.Add(pokemonSauvage);
+                carteManager.RetirerPokemonDeLaCarte(x, y);
+                Console.WriteLine($"{pokemonSauvage.Nom} capturé !");
+                joueur.AjouterExperience(10 * pokemonSauvage.Niveau); // Ajoute de l'expérience
+                Console.WriteLine($"Vous avez gagné {10 * pokemonSauvage.Niveau} points d'expérience.");
+            }
         }
         else if (choix == "2")
         {
-            Console.WriteLine("Vous avez réussi à fuir.");
-            // Retour à la carte sans changement
+            Console.WriteLine("Vous avez fui le combat.");
         }
     }
 
@@ -42,6 +47,7 @@ public class Combat
         Console.WriteLine($"Points de Vie: {pokemon.PointsDeVie}");
         Console.WriteLine($"Points de Mana: {pokemon.PointsDeMana}");
         Console.WriteLine($"Précision: {pokemon.Precision}");
+        Console.WriteLine($"Type: {pokemon.Type}");
         // Ajoutez ici d'autres statistiques si nécessaire
         Console.WriteLine("Attaques:");
         foreach (var attaque in pokemon.Attaques)
