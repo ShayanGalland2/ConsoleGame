@@ -20,7 +20,7 @@ public class Combat
 
         if (choix == "1")
         {
-            bool resultatCombat = LogiqueDeCombat.ExecuterCombat(joueur, pokemonSauvage, niveauPokemon);
+            bool resultatCombat = LogiqueDeCombat.ExecuterCombat(joueur, pokemonJoueur, pokemonSauvage, niveauPokemon);
             if (resultatCombat)
             {
                 joueur.CollectionPokemon.Add(pokemonSauvage);
