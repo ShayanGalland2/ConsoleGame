@@ -1,0 +1,5 @@
+pexp=0
+pniv=0
+pvie=0
+prev=1
+key=0

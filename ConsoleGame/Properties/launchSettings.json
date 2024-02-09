@@ -2,7 +2,7 @@
   "profiles": {
     "ConsoleGame": {
       "commandName": "Project",
-      "workingDirectory": ".\\ConsoleGame\\Debug\\net8.0\\"
+      "workingDirectory": ".."
     }
   }
 }

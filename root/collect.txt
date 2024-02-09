@@ -1,0 +1,2 @@
+pikachu 4
+bulbasaur 6
