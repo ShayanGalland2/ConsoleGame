@@ -16,6 +16,8 @@ public class CarteManager
         TrouverPositionJoueur();
     }
 
+
+
     private void ChargerCoordonneesPokemon()
     {
         string cheminFichier = "coord.txt";
@@ -110,7 +112,6 @@ public class CarteManager
             }
         }
     }
-
 
 
     public void AfficherCarte()

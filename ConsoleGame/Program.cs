@@ -71,6 +71,12 @@ class Program
         // GameLoop
         while (jeuEnCours)
         {
+            if (joueur.TousPokemonsKO())
+            {
+                Console.WriteLine("Plus de Pokemon vous avez perdu !");
+                Environment.Exit(0);
+            }
+
             // Controles
             if (Console.KeyAvailable)
             {

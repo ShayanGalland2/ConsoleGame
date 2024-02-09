@@ -158,7 +158,7 @@ public class Joueur
                 if (inventaire["potion de vie"] > 0)
                 {
                     Console.WriteLine("Choisissez un Pokémon pour lui redonner 50 HP.");
-                    var pokemonChoisi = ChoisirPokemonPourCombat(); // Cette méthode doit permettre de choisir n'importe quel Pokémon, pas seulement ceux prêts pour le combat
+                    var pokemonChoisi = ChoisirPokemonPourCombat();
                     pokemonChoisi.PointsDeVie += 50;
                     inventaire["potion de vie"]--;
                     Console.WriteLine($"{pokemonChoisi.Nom} a maintenant {pokemonChoisi.PointsDeVie} HP.");
@@ -168,19 +168,33 @@ public class Joueur
                 if (inventaire["potion revitalisante"] > 0)
                 {
                     Console.WriteLine("Choisissez un Pokémon KO pour le réanimer.");
-                    // Assurez-vous que ChoisirPokemonPourCombat() permet de choisir un Pokémon KO
-                    var pokemonChoisi = ChoisirPokemonKO(); // Vous devrez peut-être créer cette méthode pour permettre la sélection spécifique d'un Pokémon KO
-                    pokemonChoisi.EstKO = false;
-                    
-                    inventaire["potion revitalisante"]--;
-                    Console.WriteLine($"{pokemonChoisi.Nom} a été réanimé et peut désormais combattre.");
+                    var pokemonChoisi = ChoisirPokemonKO();
+                    if (pokemonChoisi != null)
+                    {
+                        pokemonChoisi.EstKO = false;
+                        pokemonChoisi.KoRestantMatchs = 0;
+
+                        inventaire["potion revitalisante"]--;
+                        Console.WriteLine($"{pokemonChoisi.Nom} a été réanimé et peut désormais combattre.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Aucun Pokémon KO n'a été sélectionné.");
+                    }
                 }
                 break;
+
             default:
                 Console.WriteLine("Choix invalide.");
                 break;
         }
     }
+
+    public bool TousPokemonsKO()
+    {
+        return CollectionPokemon.All(pokemon => pokemon.EstKO);
+    }
+
 
 
     public Pokemon ChoisirPokemonKO()
@@ -297,7 +311,8 @@ public class Joueur
 
     public void ReinitialiserExperienceEtInventaire()
     {
-        inventaire.Clear(); // Réinitialise l'inventaire
+        inventaire.Clear(); 
+        //Réinitialise l'inventaire
         inventaire.Add("pexp", 0);
         inventaire.Add("pniv", 0);
         inventaire.Add("pvie", 0);

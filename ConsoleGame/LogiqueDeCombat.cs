@@ -35,11 +35,14 @@ public static class LogiqueDeCombat
                     Console.WriteLine("Vous décidez de sauter votre tour.");
                     break;
                 case "3":
-                    // Simplifié pour l'exemple
                     joueur.UtiliserPotion();
                     break;
                 case "4":
-                    Console.WriteLine("Vous fuyez le combat.");
+                    pokemonJoueur.EstKO = true;
+                    pokemonJoueur.KoRestantMatchs = 3;
+
+                    Console.WriteLine("Vous avez fui le combat. Votre Pokémon est maintenant KO pour 3 matchs.");
+
                     combatContinue = false;
                     break;
             }
