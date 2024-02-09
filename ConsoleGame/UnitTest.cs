@@ -13,7 +13,6 @@ namespace Game.Tests
         [SetUp]
         public void Setup()
         {
-            // Assurez-vous que le fichier "map.txt" existe dans le dossier de test avec le contenu approprié
             _carteManager = new CarteManager("map.txt");
         }
 
@@ -25,8 +24,6 @@ namespace Game.Tests
             carte.Should().NotBeNull();
             carte.Length.Should().BeGreaterThan(0);
         }
-
-        // Ajoutez d'autres tests pour CarteManager ici
     }
 
     public class JoueurTests
@@ -37,7 +34,7 @@ namespace Game.Tests
         public void Setup()
         {
             _joueur = new Joueur();
-            // Initialiser avec des données de test si nécessaire
+
         }
 
         [Test]
@@ -52,7 +49,6 @@ namespace Game.Tests
             _joueur.Niveau.Should().BeGreaterThanOrEqualTo(niveauInitial);
         }
 
-        // Ajoutez d'autres tests pour Joueur ici
     }
 
     public class PokemonFactoryTests

@@ -23,7 +23,7 @@ public class GameMenu
                 case "2": // Option de sauvegarde
                     joueur.SauvegarderCollection();
                     carteManager.SauvegarderCarte();
-                    joueur.SauvegarderExperience(); // Ajout pour sauvegarder l'expérience
+                    joueur.SauvegarderExperience();
                     joueur.SauvegarderInventaire();
                     Console.WriteLine("Partie sauvegardée.");
                     Console.ReadKey();
@@ -38,8 +38,8 @@ public class GameMenu
 
                     joueur.VerifierEtAttribuerPotionsRevitalisantes();
                     joueur.AfficherInventaire();
-                    string choixObjet = Console.ReadLine(); // Lisez le choix de l'utilisateur
-                    joueur.UtiliserObjet(choixObjet); // Utilise l'objet sélectionné
+                    string choixObjet = Console.ReadLine();
+                    joueur.UtiliserObjet(choixObjet);
 
                     Console.ReadKey();
                     break;

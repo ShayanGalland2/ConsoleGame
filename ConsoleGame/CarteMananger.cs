@@ -5,18 +5,40 @@ using System.IO;
 public class CarteManager
 {
     private string[] carte;
+    private Dictionary<(int x, int y), string> coordonneesPokemon = new Dictionary<(int x, int y), string>();
     private int joueurX, joueurY;
 
     public CarteManager(string cheminFichier)
     {
         carte = ChargerCarteDepuisFichier(cheminFichier);
+        ChargerCoordonneesPokemon();
+
         TrouverPositionJoueur();
+    }
+
+    private void ChargerCoordonneesPokemon()
+    {
+        string cheminFichier = "coord.txt";
+        if (File.Exists(cheminFichier))
+        {
+            string[] lignes = File.ReadAllLines(cheminFichier);
+            foreach (string ligne in lignes)
+            {
+                var parties = ligne.Split(',');
+                if (parties.Length == 3)
+                {
+                    int x = int.Parse(parties[0]);
+                    int y = int.Parse(parties[1]);
+                    string nomPokemon = parties[2];
+                    coordonneesPokemon[(x, y)] = nomPokemon;
+                }
+            }
+        }
     }
 
     public static void InitialiserPokemonSurCarte()
     {
         var carteManager = new CarteManager("map.txt");
-        carteManager.GenererPokemonSurCarte();
     }
 
     public void GenererPokemonSurCarte()
@@ -125,6 +147,10 @@ public class CarteManager
             case ConsoleKey.RightArrow: nouveauX++; break;
         }
 
+
+
+
+
         if (nouveauX >= 0 && nouveauX < carte[0].Length && nouveauY >= 0 && nouveauY < carte.Length)
         {
             char caseCible = carte[nouveauY][nouveauX];
@@ -141,9 +167,17 @@ public class CarteManager
             // Gestion des rencontres avec des Pokémon sauvages
             if (char.IsDigit(caseCible))
             {
-                int niveauPokemon = int.Parse(caseCible.ToString());
-                Combat.DemarrerCombat(niveauPokemon, joueur, this, nouveauX, nouveauY);
-                RetirerPokemonDeLaCarte(nouveauX, nouveauY); // Retirer le Pokémon de la carte après le combat
+                if (coordonneesPokemon.TryGetValue((nouveauX, nouveauY), out string nomPokemon))
+                {
+                    int niveauPokemon = int.Parse(caseCible.ToString());
+                    var pokemonSauvage = PokemonFactory.CreerPokemon(nomPokemon, niveauPokemon);
+                    Console.WriteLine($"Vous rencontrez un {nomPokemon} sauvage !");
+                    if (Combat.DemarrerCombat(niveauPokemon, joueur, this, pokemonSauvage, nouveauX, nouveauY))
+                    {
+                        coordonneesPokemon.Remove((nouveauX, nouveauY)); // Retirer le Pokémon de la carte après le combat
+                        RetirerPokemonDeLaCarte(nouveauX, nouveauY);
+                    }
+                }
             }
             else
             {
@@ -167,7 +201,7 @@ public class CarteManager
                         Console.WriteLine("Vous avez trouvé une potion de niveau !");
                         break;
                 }
-                if (caseCible == '*') // Vérifier si le joueur entre dans un buisson
+                if (caseCible == '*')
                 {
                     Random rnd = new Random();
                     if (rnd.Next(10) == 0) // 1 chance sur 10
@@ -176,8 +210,8 @@ public class CarteManager
                         int niveauPokemon = rnd.Next(4, 9);
                         // Sélectionner un Pokémon aléatoire
                         Pokemon pokemonSauvage = PokemonFactory.AttribuerPokemonAleatoire(niveauPokemon);
-                        Combat.DemarrerCombat(niveauPokemon, joueur, this, nouveauX, nouveauY);
-                        // Pas besoin de retirer le buisson de la carte
+                        Combat.DemarrerCombat(niveauPokemon, joueur, this, pokemonSauvage, nouveauX, nouveauY);
+
                         return; // Empêcher le déplacement après le combat
                     }
                 }
@@ -201,18 +235,10 @@ public class CarteManager
 
     public void RetirerPokemonDeLaCarte(int x, int y)
     {
-        if (carte[y][x] != '#') // Assurez-vous que ce n'est pas un mur
+        if (carte[y][x] != '#')
         {
             carte[y] = carte[y].Substring(0, x) + ' ' + carte[y].Substring(x + 1);
         }
-    }
-
-    public void ReinitialiserCarte()
-    {
-        string cheminFichierBase = "baseMap.txt";
-        carte = ChargerCarteDepuisFichier(cheminFichierBase);
-        TrouverPositionJoueur();
-        GenererPokemonSurCarte(); // Cette ligne assure que les Pokémon sont redistribués sur la carte.
     }
 
 

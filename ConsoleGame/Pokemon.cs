@@ -25,6 +25,23 @@ public class Attaque
     }
 }
 
+
+public class Canalisation
+{
+    public string Nom { get; set; }
+    public int GainMana { get; set; }
+    public int GainPV { get; set; }
+
+    public Canalisation(string nom, int gainMana = 0, int gainPV = 0)
+    {
+        Nom = nom;
+        GainMana = gainMana;
+        GainPV = gainPV;
+    }
+}
+
+
+
 public class Pokemon
 {
     public TypePokemon Type { get; set; }
@@ -40,8 +57,19 @@ public class Pokemon
     public double ChanceApparition { get; set; }
     public List<Attaque> Attaques { get; set; }
 
+    public List<Canalisation> Canalisations { get; set; } = new List<Canalisation>();
+
+
+    public int GainManaParCanalisation { get; set; } = 0;
+    public int GainPVParCanalisation { get; set; } = 0;
+
+    public int KoRestantMatchs { get; set; } = 0;
+    public bool EstKO { get; set; } = false;
+
     public Pokemon()
     {
         Attaques = new List<Attaque>();
+        
     }
 }
+

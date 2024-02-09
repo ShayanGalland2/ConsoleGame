@@ -42,7 +42,7 @@ class Program
                     var carteManagerNouvellePartie = new CarteManager("map.txt"); // Recrée une nouvelle instance de CarteManager avec la carte réinitialisée
                     carteManagerNouvellePartie.GenererPokemonSurCarte(); // Regénère les Pokémon sur la carte
                     
-                    joueur.ReinitialiserExperienceEtInventaire(); // Assurez-vous d'ajouter cette méthode dans Joueur.cs
+                    joueur.ReinitialiserExperienceEtInventaire();
 
                     Console.WriteLine("Nouvelle partie commencée. Veuillez lancer le jeu.");
                     Console.ReadKey();

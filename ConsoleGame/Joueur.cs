@@ -27,7 +27,6 @@ public class Joueur
                     string key = parts[0].Trim();
                     if (int.TryParse(parts[1], out int value))
                     {
-                        // Convertit les clés en noms complets d'objets pour la cohérence avec le reste du code
                         switch (key)
                         {
                             case "pexp":
@@ -45,7 +44,6 @@ public class Joueur
                             case "key":
                                 inventaire["clé"] = value;
                                 break;
-                                // Ajoutez d'autres cas si nécessaire
                         }
                     }
                 }
@@ -53,8 +51,8 @@ public class Joueur
         }
         else
         {
-            // Initialiser l'inventaire avec des valeurs par défaut si le fichier n'existe pas
-            ReinitialiserExperienceEtInventaire(); // Vous pouvez choisir d'appeler cette méthode ou d'initialiser l'inventaire différemment ici.
+
+            ReinitialiserExperienceEtInventaire();
         }
     }
 
@@ -75,7 +73,7 @@ public class Joueur
                     AjouterExperience(xpNecessaire);
                     Console.WriteLine("Vous avez utilisé une potion de niveau. Niveau augmenté!");
                     break;
-                    // Gérez les autres cas d'utilisation ici
+
             }
             inventaire[objet]--; // Décrémente le nombre d'objets après utilisation
         }
@@ -142,10 +140,82 @@ public class Joueur
     }
 
 
-    // Lire l'expérience et le niveau du joueur depuis playInv.txt
+    public void UtiliserPotion()
+    {
+        Console.WriteLine("Choisissez une potion à utiliser :");
+        if (inventaire.ContainsKey("potion de vie") && inventaire["potion de vie"] > 0)
+        {
+            Console.WriteLine("1. Potion de vie (+50 HP)");
+        }
+        if (inventaire.ContainsKey("potion revitalisante") && inventaire["potion revitalisante"] > 0)
+        {
+            Console.WriteLine("2. Potion revitalisante (faire revivre un Pokémon KO)");
+        }
+        string choixPotion = Console.ReadLine();
+        switch (choixPotion)
+        {
+            case "1":
+                if (inventaire["potion de vie"] > 0)
+                {
+                    Console.WriteLine("Choisissez un Pokémon pour lui redonner 50 HP.");
+                    var pokemonChoisi = ChoisirPokemonPourCombat(); // Cette méthode doit permettre de choisir n'importe quel Pokémon, pas seulement ceux prêts pour le combat
+                    pokemonChoisi.PointsDeVie += 50;
+                    inventaire["potion de vie"]--;
+                    Console.WriteLine($"{pokemonChoisi.Nom} a maintenant {pokemonChoisi.PointsDeVie} HP.");
+                }
+                break;
+            case "2":
+                if (inventaire["potion revitalisante"] > 0)
+                {
+                    Console.WriteLine("Choisissez un Pokémon KO pour le réanimer.");
+                    // Assurez-vous que ChoisirPokemonPourCombat() permet de choisir un Pokémon KO
+                    var pokemonChoisi = ChoisirPokemonKO(); // Vous devrez peut-être créer cette méthode pour permettre la sélection spécifique d'un Pokémon KO
+                    pokemonChoisi.EstKO = false;
+                    
+                    inventaire["potion revitalisante"]--;
+                    Console.WriteLine($"{pokemonChoisi.Nom} a été réanimé et peut désormais combattre.");
+                }
+                break;
+            default:
+                Console.WriteLine("Choix invalide.");
+                break;
+        }
+    }
+
+
+    public Pokemon ChoisirPokemonKO()
+    {
+        var pokemonsKO = CollectionPokemon.Where(p => p.EstKO).ToList();
+
+        if (pokemonsKO.Count == 0)
+        {
+            Console.WriteLine("Vous n'avez aucun Pokémon KO.");
+            return null;
+        }
+
+        Console.WriteLine("Choisissez un Pokémon KO à réanimer :");
+        for (int i = 0; i < pokemonsKO.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {pokemonsKO[i].Nom}");
+        }
+
+        while (true)
+        {
+            if (int.TryParse(Console.ReadLine(), out int choix) && choix > 0 && choix <= pokemonsKO.Count)
+            {
+                return pokemonsKO[choix - 1];
+            }
+            else
+            {
+                Console.WriteLine("Choix invalide. Veuillez choisir un numéro valide.");
+            }
+        }
+    }
+
+
     private void ChargerExperience()
     {
-        string contenu = File.ReadAllText("playInv.txt");
+        string contenu = File.ReadAllText("playXp.txt");
         string prefixeXp = "xp=";
         int indexXp = contenu.IndexOf(prefixeXp);
         if (indexXp != -1)
@@ -154,7 +224,6 @@ public class Joueur
             if (int.TryParse(xpStr, out int xp))
             {
                 this.Experience = xp;
-                // Mettre à jour le niveau en fonction de l'expérience
                 while (Experience >= ExperienceNecessairePourNiveau(Niveau) && Niveau < 50)
                 {
                     Experience -= ExperienceNecessairePourNiveau(Niveau++);
@@ -163,11 +232,10 @@ public class Joueur
         }
     }
 
-    // Sauvegarder l'expérience et le niveau du joueur dans playInv.txt lors de la sauvegarde
     public void SauvegarderExperience()
     {
 
-        File.WriteAllText("playInv.txt", $"xp={Experience}");
+        File.WriteAllText("playXp.txt", $"xp={Experience}");
 
 
     }
@@ -201,7 +269,6 @@ public class Joueur
             else
                 sw.WriteLine("key=0");
 
-            // Ajoutez ici d'autres lignes pour sauvegarder d'autres éléments de l'inventaire si nécessaire.
         }
     }
 
@@ -297,26 +364,35 @@ public class Joueur
 
     public Pokemon ChoisirPokemonPourCombat()
     {
-        for (int i = 0; i < CollectionPokemon.Count; i++)
+        Console.WriteLine("Choisissez un Pokémon pour le combat :");
+        var pokemonValides = CollectionPokemon
+            .Select((p, index) => $"{index + 1}. {p.Nom} - {(p.KoRestantMatchs > 0 ? $"KO pour {p.KoRestantMatchs} matchs" : "Disponible")}")
+            .ToList();
+
+        foreach (var pokemon in pokemonValides)
         {
-            Console.WriteLine($"{i + 1}. {CollectionPokemon[i].Nom}");
+            Console.WriteLine(pokemon);
         }
 
-        do
+        while (true)
         {
-            
-            Console.WriteLine("\nChoisissez un Pokémon pour le combat (entrez le numéro) :");
-            if (int.TryParse(Console.ReadLine(), out int input))
+            if (int.TryParse(Console.ReadLine(), out int choix) && choix > 0 && choix <= CollectionPokemon.Count)
             {
-                int index = input - 1;
-                if (index >= 0 && index < CollectionPokemon.Count)
+                var pokemonChoisi = CollectionPokemon[choix - 1];
+                if (pokemonChoisi.KoRestantMatchs > 0)
                 {
-                    return CollectionPokemon[index];
+                    Console.WriteLine("Ce Pokémon est KO. Veuillez en choisir un autre.");
+                    continue;
                 }
+                return pokemonChoisi;
             }
-            Console.WriteLine("Erreur : Veuillez entrer un numéro valide.");
-        } while (true);
+            else
+            {
+                Console.WriteLine("Sélection invalide. Veuillez réessayer.");
+            }
+        }
     }
+
 
 
     public void SauvegarderCollection()
